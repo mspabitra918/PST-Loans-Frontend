@@ -21,6 +21,7 @@ import {
   MapPin,
   CreditCard,
 } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface Lead {
   id: string;
@@ -40,6 +41,10 @@ interface Lead {
   bank_name: string;
   routing_number?: string;
   account_number?: string;
+  contract_status?: string;
+  docusign_envelope_id?: string;
+  contract_sent_at?: string;
+  contract_signed_at?: string;
 }
 
 interface Document {
@@ -107,11 +112,11 @@ export default function LeadDetailPage() {
         {},
         { headers: { Authorization: `Bearer ${token}` } },
       );
-      alert(response.data.message);
+      toast.success(response.data.message);
       // Refresh the lead data
       fetchLeadDetail(token!);
     } catch (error) {
-      alert("Error performing action. Please try again.");
+      toast.error("Error performing action. Please try again.");
     } finally {
       setActionLoading(null);
     }
@@ -382,7 +387,57 @@ export default function LeadDetailPage() {
           </div>
 
           {/* Actions Sidebar */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 space-y-6">
+            {/* Contract Status */}
+            {lead.contract_status && lead.contract_status !== "none" && (
+              <Card className="border-none shadow-xl rounded-3xl overflow-hidden">
+                <CardHeader className="bg-[#003B5C] text-white p-6">
+                  <CardTitle className="flex items-center gap-3 text-lg">
+                    <FileText className="w-5 h-5" />
+                    Contract Status
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <span
+                      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-bold uppercase tracking-wide ${
+                        lead.contract_status === "signed"
+                          ? "bg-emerald-50 text-emerald-600"
+                          : lead.contract_status === "sent"
+                            ? "bg-blue-50 text-blue-600"
+                            : lead.contract_status === "delivered"
+                              ? "bg-amber-50 text-amber-600"
+                              : lead.contract_status === "declined"
+                                ? "bg-red-50 text-red-600"
+                                : "bg-gray-50 text-gray-600"
+                      }`}
+                    >
+                      {lead.contract_status === "signed" && (
+                        <CheckCircle className="w-4 h-4" />
+                      )}
+                      {lead.contract_status}
+                    </span>
+                  </div>
+                  {lead.contract_sent_at && (
+                    <p className="text-sm text-gray-500">
+                      Sent: {new Date(lead.contract_sent_at).toLocaleString()}
+                    </p>
+                  )}
+                  {lead.contract_signed_at && (
+                    <p className="text-sm text-emerald-600 font-bold">
+                      Signed:{" "}
+                      {new Date(lead.contract_signed_at).toLocaleString()}
+                    </p>
+                  )}
+                  {lead.docusign_envelope_id && (
+                    <p className="text-xs text-gray-400 mt-2 font-mono truncate">
+                      Envelope: {lead.docusign_envelope_id}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
             <Card className="border-none shadow-2xl rounded-3xl overflow-hidden sticky top-28">
               <CardHeader className="bg-[#003B5C] text-white p-6">
                 <CardTitle className="text-lg">Actions</CardTitle>
