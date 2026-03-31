@@ -15,12 +15,13 @@ import {
   DollarSign,
   Calendar,
   Building2,
-  Lock,
   UserCircle,
   Briefcase,
   MapPin,
   CreditCard,
+  LogOut,
 } from "lucide-react";
+import { useUser } from "@/context/UserContext";
 import toast from "react-hot-toast";
 
 interface Lead {
@@ -64,6 +65,7 @@ export default function LeadDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const router = useRouter();
+  const { user, logout } = useUser();
 
   useEffect(() => {
     const token = localStorage.getItem("admin_token");
@@ -169,8 +171,26 @@ export default function LeadDetailPage() {
               PST<span className="text-[#4CAF50]">Admin</span>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-widest">
-            <Lock className="w-3 h-3" /> Encrypted Session
+          <div className="flex items-center gap-4">
+            {user && (
+              <div className="hidden md:flex items-center gap-3">
+                <div className="w-9 h-9 bg-[#003B5C] rounded-full flex items-center justify-center text-white font-bold text-sm">
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold text-[#003B5C]">{user.name}</p>
+                  <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">{user.role}</p>
+                </div>
+              </div>
+            )}
+            <Button
+              variant="ghost"
+              className="text-gray-500 hover:text-red-600 font-bold flex items-center gap-2"
+              onClick={() => { logout(); router.push("/admin/login"); }}
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </Button>
           </div>
         </div>
       </header>

@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import axios from "axios";
 import { Lock, ShieldCheck, Key } from "lucide-react";
+import { useUser } from "@/context/UserContext";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -21,6 +22,7 @@ export default function AdminLogin() {
   const [showMfa, setShowMfa] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { setUser } = useUser();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,6 +57,7 @@ export default function AdminLogin() {
 
         if (response.data.success) {
           localStorage.setItem("admin_token", response.data.token);
+          setUser(response.data.user);
           router.push("/admin/dashboard");
         } else {
           alert(response.data.message || "Invalid verification code");

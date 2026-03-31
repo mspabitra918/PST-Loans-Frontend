@@ -13,6 +13,7 @@ import {
   Calendar,
   Lock,
 } from "lucide-react";
+import { useUser } from "@/context/UserContext";
 
 interface Lead {
   id: string;
@@ -40,6 +41,7 @@ export default function AdminDashboard() {
     new Date().toISOString().split("T")[0],
   );
   const router = useRouter();
+  const { user, logout } = useUser();
 
   useEffect(() => {
     const token = localStorage.getItem("admin_token");
@@ -84,26 +86,12 @@ export default function AdminDashboard() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("admin_token");
+    logout();
     router.push("/admin/login");
   };
 
   // Removed client-side filtering as we now use server-side search
   const filteredLeads = leads;
-
-  // const adminUser = async (email: string) => {
-  //   const response = await axios.post(
-  //     `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/admin`,
-  //     {
-  //       email,
-  //     },
-  //   );
-  //   console.log(response.data);
-  // };
-
-  // useEffect(() => {
-  //   adminUser(userEmail);
-  // }, []);
 
   if (isLoading)
     return (
@@ -126,14 +114,31 @@ export default function AdminDashboard() {
               <Lock className="w-3 h-3" /> Encrypted Session
             </div>
           </div>
-          <Button
-            variant="ghost"
-            className="text-gray-500 hover:text-red-600 font-bold flex items-center gap-2"
-            onClick={handleLogout}
-          >
-            <LogOut className="w-4 h-4" />
-            Logout
-          </Button>
+          <div className="flex items-center gap-4">
+            {user && (
+              <div className="hidden md:flex items-center gap-3">
+                <div className="w-9 h-9 bg-[#003B5C] rounded-full flex items-center justify-center text-white font-bold text-sm">
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-bold text-[#003B5C]">
+                    {user.name}
+                  </p>
+                  <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
+                    {user.role}
+                  </p>
+                </div>
+              </div>
+            )}
+            <Button
+              variant="ghost"
+              className="text-gray-500 hover:text-red-600 font-bold flex items-center gap-2"
+              onClick={handleLogout}
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </Button>
+          </div>
         </div>
       </header>
 
