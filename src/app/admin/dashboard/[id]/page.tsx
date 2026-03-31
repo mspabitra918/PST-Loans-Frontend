@@ -420,7 +420,7 @@ export default function LeadDetailPage() {
                   </div>
                   {lead.contract_sent_at && (
                     <p className="text-sm text-gray-500">
-                      Sent: {new Date(lead.contract_sent_at).toLocaleString()}
+                      Sent : {new Date(lead.contract_sent_at).toLocaleString()}
                     </p>
                   )}
                   {lead.contract_signed_at && (
