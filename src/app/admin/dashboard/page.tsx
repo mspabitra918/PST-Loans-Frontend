@@ -176,7 +176,7 @@ export default function AdminDashboard() {
                 onClick={() => router.push("/admin/leads/new")}
                 className="bg-[#003B5C] text-white hover:bg-[#002a42] font-bold py-4 px-6 rounded-2xl transition-colors"
               >
-                Add Lead
+                Add Staff
               </button>
             </div>
           </div>
