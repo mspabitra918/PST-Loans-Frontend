@@ -39,7 +39,7 @@ const leadSchema = z.object({
   email: z.string().email("Invalid email address"),
   phone: z.string().min(10, "Invalid phone number"),
   incomeSource: z.string().min(1, "Required"),
-  monthlyNet: z.number().min(1000, "Monthly net income must be at least $1000"),
+  monthlyNet: z.string().min(1, "Required"),
   payFrequency: z.string().min(1, "Required"),
   bankType: z.string().min(1, "Required"),
   routingNumber: z
@@ -50,6 +50,36 @@ const leadSchema = z.object({
 });
 
 type LeadFormData = z.infer<typeof leadSchema>;
+import { cn } from "@/lib/utils";
+
+const Select = React.forwardRef<
+  HTMLSelectElement,
+  React.SelectHTMLAttributes<HTMLSelectElement> & {
+    label?: string;
+    error?: string;
+  }
+>(({ className, label, error, children, ...props }, ref) => (
+  <div className="w-full">
+    {label && (
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        {label}
+      </label>
+    )}
+    <select
+      className={cn(
+        "flex h-12 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#003B5C] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+        error && "border-red-500 focus-visible:ring-red-500",
+        className,
+      )}
+      ref={ref}
+      {...props}
+    >
+      {children}
+    </select>
+    {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+  </div>
+));
+Select.displayName = "Select";
 
 export const LeadForm = () => {
   const [step, setStep] = useState(1);
@@ -68,10 +98,10 @@ export const LeadForm = () => {
       lastName: "",
       email: "",
       phone: "",
-      incomeSource: "Employed",
-      monthlyNet: 0,
+      incomeSource: "",
+      monthlyNet: "",
       payFrequency: "Bi-Weekly",
-      bankType: "Checking",
+      bankType: "",
       routingNumber: "",
       accountNumber: "",
       ssnLast4: "",
@@ -532,39 +562,81 @@ export const LeadForm = () => {
 
                 {step === 4 && (
                   <div className="space-y-5">
-                    <Input
+                    <Select
                       label="Income Source"
-                      placeholder="Employed"
                       {...form.register("incomeSource")}
                       error={form.formState.errors.incomeSource?.message}
-                    />
-                    <Controller
-                      name="monthlyNet"
-                      control={form.control}
-                      render={({ field }) => (
-                        <Input
-                          label="Monthly Net Income"
-                          type="text"
-                          placeholder="2500"
-                          {...field}
-                          value={field.value || ""}
-                          onChange={(e) => {
-                            const val =
-                              e.target.value === ""
-                                ? 0
-                                : parseInt(e.target.value);
-                            field.onChange(val);
-                          }}
-                          error={form.formState.errors.monthlyNet?.message}
-                        />
+                    >
+                      <option value="" disabled>
+                        -- Select an option --
+                      </option>
+                      <option value="Employed">Employed</option>
+                      <option value="Self-Employed">Self-Employed</option>
+                      <option value="Business Owner">Business Owner</option>
+                      <option value="Military">Military</option>
+                      <option value="Social Security / Disability">
+                        Social Security / Disability
+                      </option>
+                      <option value="Pension / Retirement">
+                        Pension / Retirement
+                      </option>
+                      <option value="Unemployed / Others">
+                        Unemployed / Others
+                      </option>
+                    </Select>
+
+                    <Select
+                      label="Monthly Net Income"
+                      {...form.register("monthlyNet")}
+                      error={form.formState.errors.monthlyNet?.message}
+                    >
+                      <option value="" disabled>
+                        -- Select an option --
+                      </option>
+                      <option value="Less than $1,000">Less than $1,000</option>
+                      <option value="$1,000 – $2,000">$1,000 – $2,000</option>
+                      <option value="$2,001 – $3,500">$2,001 – $3,500</option>
+                      <option value="$3,501 – $5,000">$3,501 – $5,000</option>
+                      <option value="$5,001 – $7,500">$5,001 – $7,500</option>
+                      <option value="$7,501 – $10,000">$7,501 – $10,000</option>
+                      <option value="$10,000+">$10,000+</option>
+                    </Select>
+
+                    <div className="space-y-3">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Pay Frequency
+                      </label>
+                      <div className="grid grid-cols-2 gap-3">
+                        {["Weekly", "Bi-Weekly", "Semi-Monthly", "Monthly"].map(
+                          (freq) => (
+                            <label
+                              key={freq}
+                              className={cn(
+                                "flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all",
+                                form.watch("payFrequency") === freq
+                                  ? "border-[#003B5C] bg-blue-50"
+                                  : "border-gray-100 bg-white hover:border-gray-200",
+                              )}
+                            >
+                              <input
+                                type="radio"
+                                value={freq}
+                                className="w-4 h-4 accent-[#003B5C]"
+                                {...form.register("payFrequency")}
+                              />
+                              <span className="text-sm font-medium text-gray-700">
+                                {freq}
+                              </span>
+                            </label>
+                          ),
+                        )}
+                      </div>
+                      {form.formState.errors.payFrequency && (
+                        <p className="text-xs text-red-500">
+                          {form.formState.errors.payFrequency.message}
+                        </p>
                       )}
-                    />
-                    <Input
-                      label="Pay Frequency"
-                      placeholder="Bi-Weekly"
-                      {...form.register("payFrequency")}
-                      error={form.formState.errors.payFrequency?.message}
-                    />
+                    </div>
                     <div className="flex gap-4 pt-4">
                       <Button
                         type="button"
@@ -594,12 +666,17 @@ export const LeadForm = () => {
                 {step === 5 && (
                   <div className="space-y-5">
                     <div className="grid grid-cols-2 gap-4">
-                      <Input
+                      <Select
                         label="Bank Type"
-                        placeholder="Checking"
                         {...form.register("bankType")}
                         error={form.formState.errors.bankType?.message}
-                      />
+                      >
+                        <option value="" disabled>
+                          -- Select an option --
+                        </option>
+                        <option value="Checking">Checking</option>
+                        <option value="Savings">Savings</option>
+                      </Select>
                       <Input
                         label="SSN (Last 4)"
                         placeholder="1234"
@@ -696,7 +773,7 @@ export const LeadForm = () => {
                             Income
                           </p>
                           <p className="font-bold text-[#003B5C]">
-                            ${form.watch("monthlyNet")}/mo
+                            {form.watch("monthlyNet")}
                           </p>
                         </div>
                         <div>

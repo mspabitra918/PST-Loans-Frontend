@@ -178,15 +178,22 @@ export default function LeadDetailPage() {
                   {user.name.charAt(0).toUpperCase()}
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-bold text-[#003B5C]">{user.name}</p>
-                  <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">{user.role}</p>
+                  <p className="text-sm font-bold text-[#003B5C]">
+                    {user.name}
+                  </p>
+                  <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
+                    {user.role}
+                  </p>
                 </div>
               </div>
             )}
             <Button
               variant="ghost"
               className="text-gray-500 hover:text-red-600 font-bold flex items-center gap-2"
-              onClick={() => { logout(); router.push("/admin/login"); }}
+              onClick={() => {
+                logout();
+                router.push("/admin/login");
+              }}
             >
               <LogOut className="w-4 h-4" />
               Logout
@@ -294,7 +301,7 @@ export default function LeadDetailPage() {
                     </p>
                     <div className="space-y-2">
                       <p className="text-lg font-bold text-[#003B5C]">
-                        ${lead.monthly_net.toLocaleString()}/month
+                        {lead.monthly_net.toLocaleString()}/month
                       </p>
                       <p className="text-sm text-gray-500">
                         {lead.income_source} • {lead.pay_frequency}
