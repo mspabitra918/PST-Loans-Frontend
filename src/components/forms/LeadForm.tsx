@@ -105,7 +105,7 @@ export const LeadForm = () => {
       s.parentNode.insertBefore(t,s)}(window, document,'script',
       'https://connect.facebook.net/en_US/fbevents.js');
       fbq('init', '2392306191230857');
-      fbq('track', 'PageView');
+      fbq('track', 'Lead');
     `;
     document.head.appendChild(script);
 
