@@ -223,7 +223,15 @@ export default function AdminDashboard() {
                         </div>
                         <div className="text-[10px] text-gray-400 flex items-center gap-1 font-bold uppercase tracking-tighter">
                           <Calendar className="w-3 h-3" />{" "}
-                          {new Date(lead.created_at).toLocaleDateString()}
+                          {new Date(lead.created_at).toLocaleString("en-IN", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                            hour12: true, // set false for 24-hour format
+                          })}
                         </div>
                       </td>
                       <td className="px-8 py-6">

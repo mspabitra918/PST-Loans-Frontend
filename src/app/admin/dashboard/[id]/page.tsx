@@ -212,6 +212,18 @@ export default function LeadDetailPage() {
               <p className="text-gray-500 font-medium">
                 Application #{lead.unique_lead_id}
               </p>
+              <p className="text-gray-500 font-medium">
+                Created:{" "}
+                {new Date(lead.created_at).toLocaleString("en-IN", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                  hour12: true, // set false for 24-hour format
+                })}
+              </p>
             </div>
             <span
               className={`px-4 py-2 rounded-full text-sm font-black uppercase tracking-widest border ${
