@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import axios from "axios";
@@ -41,7 +41,35 @@ export default function AdminDashboard() {
     new Date().toISOString().split("T")[0],
   );
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, logout } = useUser();
+
+  // Initialize state from URL params
+  useEffect(() => {
+    const dateParam = searchParams.get("date");
+    const searchParam = searchParams.get("search");
+
+    if (dateParam) {
+      setSelectedDate(dateParam);
+    }
+    if (searchParam) {
+      setSearchTerm(searchParam);
+    }
+  }, [searchParams]);
+
+  // Update URL when filters change
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchTerm.trim()) {
+      params.set("search", searchTerm.trim());
+    }
+    if (selectedDate) {
+      params.set("date", selectedDate);
+    }
+
+    const newUrl = params.toString() ? `?${params.toString()}` : "";
+    router.replace(`/admin/dashboard${newUrl}`, { scroll: false });
+  }, [searchTerm, selectedDate, router]);
 
   useEffect(() => {
     const token = localStorage.getItem("admin_token");
@@ -92,6 +120,44 @@ export default function AdminDashboard() {
 
   // Removed client-side filtering as we now use server-side search
   const filteredLeads = leads;
+
+  const downloadLeads = async (date: string) => {
+    if (!date) {
+      alert("Please select a date to download leads for.");
+      return;
+    }
+    const token = localStorage.getItem("admin_token");
+    if (!token) {
+      router.push("/admin/login");
+      return;
+    }
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/leads/export/download`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { date },
+          responseType: "blob",
+        },
+      );
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `leads-${date}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Download failed", err);
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        router.push("/admin/login");
+        return;
+      }
+      alert("Failed to download leads. Please try again.");
+    }
+  };
 
   if (isLoading)
     return (
@@ -152,7 +218,7 @@ export default function AdminDashboard() {
               Manage and review internal loan applications.
             </p>
           </div>
-          <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+          <div className="flex flex-col md:flex-row flex-wrap gap-4 w-full md:w-auto">
             <div className="relative w-full md:w-96 group">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#003B5C] transition-colors" />
               <input
@@ -171,12 +237,32 @@ export default function AdminDashboard() {
                 className="w-full pl-12 pr-4 py-4 bg-white border-2 border-gray-100 rounded-2xl text-sm focus:outline-none focus:border-[#003B5C] transition-all shadow-sm"
               />
             </div>
+
+            <div>
+              <button
+                onClick={() => {
+                  window.location.href = window.location.pathname;
+                }}
+                className=" text-black border  font-bold py-4 px-6 rounded-2xl transition-colors text-sm"
+              >
+                Clear
+              </button>
+            </div>
             <div>
               <button
                 onClick={() => router.push("/admin/leads/new")}
-                className="bg-[#003B5C] text-white hover:bg-[#002a42] font-bold py-4 px-6 rounded-2xl transition-colors"
+                className="bg-[#003B5C] text-white hover:bg-[#002a42] font-bold py-4 px-6 rounded-2xl transition-colors text-sm"
               >
                 Add Staff
+              </button>
+            </div>
+
+            <div>
+              <button
+                className="bg-[#003B5C] text-white hover:bg-[#002a42] font-bold py-4 px-6 rounded-2xl transition-colors text-sm"
+                onClick={() => downloadLeads(selectedDate)}
+              >
+                Download Leads
               </button>
             </div>
           </div>
@@ -199,7 +285,21 @@ export default function AdminDashboard() {
                     <tr
                       key={lead.id}
                       className={`hover:bg-blue-50/30 transition-colors cursor-pointer group`}
-                      onClick={() => router.push(`/admin/dashboard/${lead.id}`)}
+                      onClick={() => {
+                        const params = new URLSearchParams();
+                        if (searchTerm.trim()) {
+                          params.set("search", searchTerm.trim());
+                        }
+                        if (selectedDate) {
+                          params.set("date", selectedDate);
+                        }
+                        const queryString = params.toString()
+                          ? `?${params.toString()}`
+                          : "";
+                        router.push(
+                          `/admin/dashboard/${lead.id}${queryString}`,
+                        );
+                      }}
                     >
                       <td className="px-8 py-6">
                         <div className="flex items-center gap-3">

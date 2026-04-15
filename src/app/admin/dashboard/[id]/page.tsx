@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import axios from "axios";
@@ -65,6 +65,7 @@ export default function LeadDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, logout } = useUser();
 
   useEffect(() => {
@@ -95,7 +96,10 @@ export default function LeadDetailPage() {
       );
       setDocuments(docsResponse.data.documents || []);
     } catch (error) {
-      router.push("/admin/dashboard");
+      const queryString = searchParams.toString()
+        ? `?${searchParams.toString()}`
+        : "";
+      router.push(`/admin/dashboard${queryString}`);
     } finally {
       setIsLoading(false);
     }
@@ -144,7 +148,14 @@ export default function LeadDetailPage() {
             <p className="text-gray-500 mb-6">
               The requested lead could not be found.
             </p>
-            <Button onClick={() => router.push("/admin/dashboard")}>
+            <Button
+              onClick={() => {
+                const queryString = searchParams.toString()
+                  ? `?${searchParams.toString()}`
+                  : "";
+                router.push(`/admin/dashboard${queryString}`);
+              }}
+            >
               Back to Dashboard
             </Button>
           </CardContent>
@@ -160,7 +171,12 @@ export default function LeadDetailPage() {
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
-              onClick={() => router.push("/admin/dashboard")}
+              onClick={() => {
+                const queryString = searchParams.toString()
+                  ? `?${searchParams.toString()}`
+                  : "";
+                router.push(`/admin/dashboard${queryString}`);
+              }}
               className="flex items-center gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
