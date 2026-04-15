@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import axios from "axios";
@@ -41,13 +41,13 @@ export default function AdminDashboard() {
     new Date().toISOString().split("T")[0],
   );
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { user, logout } = useUser();
 
   // Initialize state from URL params
   useEffect(() => {
-    const dateParam = searchParams.get("date");
-    const searchParam = searchParams.get("search");
+    const urlParams = new URLSearchParams(window.location.search);
+    const dateParam = urlParams.get("date");
+    const searchParam = urlParams.get("search");
 
     if (dateParam) {
       setSelectedDate(dateParam);
@@ -55,7 +55,7 @@ export default function AdminDashboard() {
     if (searchParam) {
       setSearchTerm(searchParam);
     }
-  }, [searchParams]);
+  }, []);
 
   // Update URL when filters change
   useEffect(() => {
