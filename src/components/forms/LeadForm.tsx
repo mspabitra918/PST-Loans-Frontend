@@ -559,10 +559,18 @@ export const LeadForm = () => {
                           value={field.value}
                           error={form.formState.errors.phone?.message}
                           onChange={(e) => {
-                            const digits = e.target.value
-                              .replace(/\D/g, "")
-                              .slice(0, 10);
+                            let digits = e.target.value.replace(/\D/g, "");
+
+                            // ✅ Remove country code (1) if present
+                            if (digits.length > 10 && digits.startsWith("1")) {
+                              digits = digits.slice(1);
+                            }
+
+                            // ✅ Limit to 10 digits
+                            digits = digits.slice(0, 10);
+
                             let formatted = digits;
+
                             if (digits.length > 6) {
                               formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
                             } else if (digits.length > 3) {
@@ -570,6 +578,7 @@ export const LeadForm = () => {
                             } else if (digits.length > 0) {
                               formatted = `(${digits}`;
                             }
+
                             field.onChange(formatted);
                           }}
                         />
