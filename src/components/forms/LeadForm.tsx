@@ -42,6 +42,7 @@ const leadSchema = z.object({
   monthlyNet: z.string().min(1, "Required"),
   payFrequency: z.string().min(1, "Required"),
   bankType: z.string().min(1, "Required"),
+  bankName: z.string().min(2, "Last name is too short"),
   routingNumber: z
     .string()
     .length(9, "Routing number must be exactly 9 digits"),
@@ -139,6 +140,7 @@ export const LeadForm = () => {
       monthlyNet: "",
       payFrequency: "Bi-Weekly",
       bankType: "",
+      bankName: "",
       routingNumber: "",
       accountNumber: "",
       ssnLast4: "",
@@ -731,6 +733,12 @@ export const LeadForm = () => {
                         error={form.formState.errors.ssnLast4?.message}
                       />
                     </div>
+                    <Input
+                      label="Bank Name"
+                      placeholder="Bank of America"
+                      {...form.register("bankName")}
+                      error={form.formState.errors.bankName?.message}
+                    />
                     <Input
                       label="Routing Number"
                       placeholder="123456789"
