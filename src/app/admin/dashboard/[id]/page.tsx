@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -20,9 +20,13 @@ import {
   MapPin,
   CreditCard,
   LogOut,
+  Edit,
 } from "lucide-react";
 import { useUser } from "@/context/UserContext";
 import toast from "react-hot-toast";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/forms/LeadForm";
+import { cn } from "@/lib/utils";
 
 interface Lead {
   id: string;
@@ -31,12 +35,12 @@ interface Lead {
   email: string;
   phone: string;
   zip: string;
-  loan_amount: number;
+  loan_amount: number | string;
   status: string;
   created_at: string;
   unique_lead_id: string;
   income_source: string;
-  monthly_net: number;
+  monthly_net: number | string;
   pay_frequency: string;
   bank_type: string;
   bank_name: string;
@@ -46,6 +50,7 @@ interface Lead {
   docusign_envelope_id?: string;
   contract_sent_at?: string;
   contract_signed_at?: string;
+  ssn_last4_hash?: string;
 }
 
 interface Document {
@@ -64,6 +69,16 @@ export default function LeadDetailPage() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  const [formData, setFormData] = useState<Partial<Lead>>({});
+  const [formErrors, setFormErrors] = useState<
+    Partial<Record<keyof Lead, string>>
+  >({});
+  const [hasAttemptedSave, setHasAttemptedSave] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const [editMode, setEditMode] = useState(false);
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, logout } = useUser();
@@ -76,6 +91,34 @@ export default function LeadDetailPage() {
     }
     fetchLeadDetail(token);
   }, [id, router]);
+
+  useEffect(() => {
+    if (editMode && lead) {
+      setFormData({
+        first_name: lead.first_name,
+        last_name: lead.last_name,
+        email: lead.email,
+        phone: lead.phone,
+        zip: lead.zip,
+        loan_amount: lead.loan_amount,
+        status: lead.status,
+        created_at: lead.created_at,
+        unique_lead_id: lead.unique_lead_id,
+        income_source: lead.income_source,
+        monthly_net: lead.monthly_net,
+        pay_frequency: lead.pay_frequency,
+        bank_type: lead.bank_type,
+        bank_name: lead.bank_name,
+        routing_number: lead.routing_number,
+        account_number: lead.account_number,
+        contract_status: lead.contract_status,
+        docusign_envelope_id: lead.docusign_envelope_id,
+        contract_sent_at: lead.contract_sent_at,
+        contract_signed_at: lead.contract_signed_at,
+        ssn_last4_hash: lead.ssn_last4_hash,
+      });
+    }
+  }, [editMode, lead]);
 
   const fetchLeadDetail = async (token: string) => {
     try {
@@ -102,6 +145,121 @@ export default function LeadDetailPage() {
       router.push(`/admin/dashboard${queryString}`);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const validateForm = () => {
+    const errors: Partial<Record<keyof Lead, string>> = {};
+
+    if (!formData.first_name || formData.first_name.trim().length < 2) {
+      errors.first_name = "First name must be at least 2 characters";
+    }
+    if (!formData.last_name || formData.last_name.trim().length < 2) {
+      errors.last_name = "Last name must be at least 2 characters";
+    }
+    if (
+      !formData.email ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
+    ) {
+      errors.email = "Invalid email address";
+    }
+    const phoneDigits = (formData.phone || "").replace(/\D/g, "");
+    if (phoneDigits.length !== 10) {
+      errors.phone = "Phone must be 10 digits";
+    }
+    if (!formData.zip || !/^\d{5}$/.test(String(formData.zip))) {
+      errors.zip = "ZIP must be exactly 5 digits";
+    }
+    const loanNum = Number(formData.loan_amount);
+    if (!loanNum || loanNum < 500 || loanNum > 5000) {
+      errors.loan_amount = "Loan amount must be between $500 and $5,000";
+    }
+    if (!formData.income_source) {
+      errors.income_source = "Income source is required";
+    }
+    if (!formData.monthly_net) {
+      errors.monthly_net = "Monthly net income is required";
+    }
+    if (!formData.pay_frequency) {
+      errors.pay_frequency = "Pay frequency is required";
+    }
+    if (!formData.bank_type) {
+      errors.bank_type = "Bank type is required";
+    }
+    if (!formData.bank_name || formData.bank_name.trim().length < 2) {
+      errors.bank_name = "Bank name must be at least 2 characters";
+    }
+    if (
+      !formData.routing_number ||
+      !/^\d{9}$/.test(String(formData.routing_number))
+    ) {
+      errors.routing_number = "Routing number must be exactly 9 digits";
+    }
+    if (!formData.account_number || String(formData.account_number).length < 4) {
+      errors.account_number = "Account number is too short";
+    }
+    if (
+      !formData.ssn_last4_hash ||
+      !/^\d{4}$/.test(String(formData.ssn_last4_hash))
+    ) {
+      errors.ssn_last4_hash = "SSN must be exactly 4 digits";
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  useEffect(() => {
+    if (hasAttemptedSave) validateForm();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData, hasAttemptedSave]);
+
+  const handelSaveDetails = async () => {
+    setHasAttemptedSave(true);
+    if (!validateForm()) {
+      toast.error("Please fix the errors before saving.");
+      return;
+    }
+
+    const token = localStorage.getItem("admin_token");
+    if (!token) {
+      router.push("/admin/login");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const payload = {
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        email: formData.email,
+        phone: formData.phone,
+        zip: formData.zip,
+        loan_amount: Number(formData.loan_amount),
+        income_source: formData.income_source,
+        monthly_net: formData.monthly_net,
+        pay_frequency: formData.pay_frequency,
+        bank_type: formData.bank_type,
+        bank_name: formData.bank_name,
+        routing_number: formData.routing_number,
+        account_number: formData.account_number,
+        ssn_last4: formData.ssn_last4_hash,
+      };
+
+      const response = await axios.patch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/leads/${id}`,
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      toast.success(response.data.message || "Lead updated successfully");
+      setEditMode(false);
+      setHasAttemptedSave(false);
+      setFormErrors({});
+      fetchLeadDetail(token);
+    } catch (error) {
+      toast.error("Error updating lead. Please try again.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -163,6 +321,14 @@ export default function LeadDetailPage() {
       </div>
     );
   }
+
+  // if (editMode) {
+  //   return (
+  //     <>
+  //       <div>dgvjhjhf</div>
+  //     </>
+  //   );
+  // }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
@@ -241,23 +407,33 @@ export default function LeadDetailPage() {
                 })}
               </p>
             </div>
-            <span
-              className={`px-4 py-2 rounded-full text-sm font-black uppercase tracking-widest border ${
-                lead.status === "New"
-                  ? "bg-blue-50 text-blue-600 border-blue-100"
-                  : lead.status === "Approved"
-                    ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-                    : lead.status === "Declined"
-                      ? "bg-red-50 text-red-600 border-red-100"
-                      : lead.status === "Documents Requested"
-                        ? "bg-amber-50 text-amber-600 border-amber-100"
-                        : lead.status === "Documents Uploaded"
-                          ? "bg-purple-50 text-purple-600 border-purple-100"
-                          : "bg-gray-50 text-gray-600 border-gray-100"
-              }`}
-            >
-              {lead.status}
-            </span>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <button
+                  onClick={() => setEditMode(true)}
+                  className="border border-gray-500 cursor-pointer px-4 py-2 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-100 flex items-center gap-2"
+                >
+                  Edit Details
+                </button>
+              </div>
+              <span
+                className={`px-4 py-2 rounded-full text-sm font-black uppercase tracking-widest border ${
+                  lead.status === "New"
+                    ? "bg-blue-50 text-blue-600 border-blue-100"
+                    : lead.status === "Approved"
+                      ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                      : lead.status === "Declined"
+                        ? "bg-red-50 text-red-600 border-red-100"
+                        : lead.status === "Documents Requested"
+                          ? "bg-amber-50 text-amber-600 border-amber-100"
+                          : lead.status === "Documents Uploaded"
+                            ? "bg-purple-50 text-purple-600 border-purple-100"
+                            : "bg-gray-50 text-gray-600 border-gray-100"
+                }`}
+              >
+                {lead.status}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -329,7 +505,7 @@ export default function LeadDetailPage() {
                     </p>
                     <div className="space-y-2">
                       <p className="text-lg font-bold text-[#003B5C]">
-                        {lead.monthly_net.toLocaleString()}/month
+                        {lead?.monthly_net?.toLocaleString()}/month
                       </p>
                       <p className="text-sm text-gray-500">
                         {lead.income_source} • {lead.pay_frequency}
@@ -570,6 +746,305 @@ export default function LeadDetailPage() {
             </Card>
           </div>
         </div>
+
+        {editMode && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b sticky top-0 bg-white z-10">
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Edit Lead Details
+                </h2>
+                <button
+                  onClick={() => setEditMode(false)}
+                  className="text-gray-400 hover:text-gray-700 text-lg"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="p-6 overflow-y-auto space-y-5">
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="First Name"
+                    placeholder="Enter first name"
+                    value={formData.first_name ?? ""}
+                    error={formErrors.first_name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, first_name: e.target.value })
+                    }
+                  />
+                  <Input
+                    label="Last Name"
+                    placeholder="Enter last name"
+                    value={formData.last_name ?? ""}
+                    error={formErrors.last_name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, last_name: e.target.value })
+                    }
+                  />
+                </div>
+
+                <Input
+                  label="Email"
+                  placeholder="Enter email address"
+                  value={formData.email ?? ""}
+                  error={formErrors.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="Phone"
+                    placeholder="Enter phone number"
+                    value={formData.phone ?? ""}
+                    error={formErrors.phone}
+                    onChange={(e) => {
+                      let digits = e.target.value.replace(/\D/g, "");
+
+                      if (digits.length > 10 && digits.startsWith("1")) {
+                        digits = digits.slice(1);
+                      }
+
+                      digits = digits.slice(0, 10);
+
+                      let formatted =
+                        digits.length > 6
+                          ? `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
+                          : digits.length > 3
+                            ? `(${digits.slice(0, 3)}) ${digits.slice(3)}`
+                            : digits.length > 0
+                              ? `(${digits}`
+                              : "";
+
+                      setFormData({ ...formData, phone: formatted });
+                    }}
+                  />
+                  <Input
+                    label="ZIP Code"
+                    placeholder="Enter ZIP code"
+                    maxLength={5}
+                    value={formData.zip ?? ""}
+                    error={formErrors.zip}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        zip: e.target.value.replace(/\D/g, "").slice(0, 5),
+                      })
+                    }
+                  />
+                </div>
+
+                <Input
+                  label="Loan Amount"
+                  placeholder="Enter loan amount"
+                  type="number"
+                  value={formData.loan_amount ?? ""}
+                  error={formErrors.loan_amount}
+                  onChange={(e) =>
+                    setFormData({ ...formData, loan_amount: e.target.value })
+                  }
+                />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Select
+                    label="Income Source"
+                    value={formData.income_source ?? ""}
+                    error={formErrors.income_source}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        income_source: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="" disabled>
+                      -- Select an option --
+                    </option>
+                    <option value="Employed">Employed</option>
+                    <option value="Self-Employed">Self-Employed</option>
+                    <option value="Business Owner">Business Owner</option>
+                    <option value="Military">Military</option>
+                    <option value="Social Security / Disability">
+                      Social Security / Disability
+                    </option>
+                    <option value="Pension / Retirement">
+                      Pension / Retirement
+                    </option>
+                    <option value="Unemployed / Others">
+                      Unemployed / Others
+                    </option>
+                  </Select>
+                  <Select
+                    label="Monthly Net Income"
+                    value={formData.monthly_net ?? ""}
+                    error={formErrors.monthly_net}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        monthly_net: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="" disabled>
+                      -- Select an option --
+                    </option>
+                    <option value="Less than $1,000">Less than $1,000</option>
+                    <option value="$1,000 – $2,000">$1,000 – $2,000</option>
+                    <option value="$2,001 – $3,500">$2,001 – $3,500</option>
+                    <option value="$3,501 – $5,000">$3,501 – $5,000</option>
+                    <option value="$5,001 – $7,500">$5,001 – $7,500</option>
+                    <option value="$7,501 – $10,000">$7,501 – $10,000</option>
+                    <option value="$10,000+">$10,000+</option>
+                  </Select>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Pay Frequency
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {["Weekly", "Bi-Weekly", "Semi-Monthly", "Monthly"].map(
+                      (freq) => (
+                        <label
+                          key={freq}
+                          className={cn(
+                            "flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all",
+                            formData.pay_frequency === freq
+                              ? "border-[#003B5C] bg-blue-50"
+                              : "border-gray-100 bg-white hover:border-gray-200",
+                          )}
+                        >
+                          <input
+                            type="radio"
+                            name="pay_frequency"
+                            value={freq}
+                            checked={formData.pay_frequency === freq}
+                            className="w-4 h-4 accent-[#003B5C]"
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                pay_frequency: e.target.value,
+                              })
+                            }
+                          />
+                          <span className="text-sm font-medium text-gray-700">
+                            {freq}
+                          </span>
+                        </label>
+                      ),
+                    )}
+                  </div>
+                  {formErrors.pay_frequency && (
+                    <p className="text-xs text-red-500">
+                      {formErrors.pay_frequency}
+                    </p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Select
+                    label="Bank Type"
+                    value={formData.bank_type ?? ""}
+                    error={formErrors.bank_type}
+                    onChange={(e) =>
+                      setFormData({ ...formData, bank_type: e.target.value })
+                    }
+                  >
+                    <option value="" disabled>
+                      -- Select an option --
+                    </option>
+                    <option value="Checking">Checking</option>
+                    <option value="Savings">Savings</option>
+                  </Select>
+                  <Input
+                    label="Bank Name"
+                    placeholder="Enter bank name"
+                    value={formData.bank_name ?? ""}
+                    error={formErrors.bank_name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, bank_name: e.target.value })
+                    }
+                  />
+                </div>
+                <Input
+                  label="Routing Number"
+                  placeholder="Enter routing number"
+                  maxLength={9}
+                  value={formData.routing_number ?? ""}
+                  error={formErrors.routing_number}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      routing_number: e.target.value
+                        .replace(/\D/g, "")
+                        .slice(0, 9),
+                    })
+                  }
+                />
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="Account Number"
+                    placeholder="Enter account number"
+                    value={formData.account_number ?? ""}
+                    error={formErrors.account_number}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        account_number: e.target.value,
+                      })
+                    }
+                  />
+                  <Input
+                    label="SSN Last 4 Digits"
+                    placeholder="Enter SSN last 4 digits"
+                    maxLength={4}
+                    value={formData.ssn_last4_hash ?? ""}
+                    error={formErrors.ssn_last4_hash}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        ssn_last4_hash: e.target.value
+                          .replace(/\D/g, "")
+                          .slice(0, 4),
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditMode(false);
+                    setHasAttemptedSave(false);
+                    setFormErrors({});
+                  }}
+                  disabled={isSaving}
+                  className="px-4 py-2 rounded-lg border text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handelSaveDetails}
+                  disabled={isSaving}
+                  className="px-5 py-2 rounded-lg bg-[#003B5C] text-white hover:bg-[#00263d] disabled:opacity-50 flex items-center gap-2"
+                >
+                  {isSaving && (
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  )}
+                  {isSaving ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

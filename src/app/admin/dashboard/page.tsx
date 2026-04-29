@@ -36,7 +36,9 @@ interface Lead {
 export default function AdminDashboard() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0],
   );
@@ -54,14 +56,15 @@ export default function AdminDashboard() {
     }
     if (searchParam) {
       setSearchTerm(searchParam);
+      setAppliedSearch(searchParam);
     }
   }, []);
 
-  // Update URL when filters change
+  // Update URL when applied filters change
   useEffect(() => {
     const params = new URLSearchParams();
-    if (searchTerm.trim()) {
-      params.set("search", searchTerm.trim());
+    if (appliedSearch.trim()) {
+      params.set("search", appliedSearch.trim());
     }
     if (selectedDate) {
       params.set("date", selectedDate);
@@ -69,7 +72,7 @@ export default function AdminDashboard() {
 
     const newUrl = params.toString() ? `?${params.toString()}` : "";
     router.replace(`/admin/dashboard${newUrl}`, { scroll: false });
-  }, [searchTerm, selectedDate, router]);
+  }, [appliedSearch, selectedDate, router]);
 
   useEffect(() => {
     const token = localStorage.getItem("admin_token");
@@ -78,12 +81,13 @@ export default function AdminDashboard() {
       return;
     }
 
-    const delayDebounceFn = setTimeout(() => {
-      fetchLeads(token, searchTerm, selectedDate);
-    }, 500);
+    fetchLeads(token, appliedSearch, selectedDate);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router, appliedSearch, selectedDate]);
 
-    return () => clearTimeout(delayDebounceFn);
-  }, [router, searchTerm, selectedDate]);
+  const handleSearch = () => {
+    setAppliedSearch(searchTerm);
+  };
 
   const fetchLeads = async (
     token: string,
@@ -94,7 +98,7 @@ export default function AdminDashboard() {
     if (search.trim()) params.search = search.trim();
     if (date) params.date = date;
     try {
-      setIsLoading(true);
+      if (!hasLoadedOnce) setIsLoading(true);
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/leads`,
         {
@@ -110,6 +114,7 @@ export default function AdminDashboard() {
       }
     } finally {
       setIsLoading(false);
+      setHasLoadedOnce(true);
     }
   };
 
@@ -225,8 +230,19 @@ export default function AdminDashboard() {
                 placeholder="Search by name, email or ID..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSearch();
+                }}
                 className="w-full pl-12 pr-4 py-4 bg-white border-2 border-gray-100 rounded-2xl text-sm focus:outline-none focus:border-[#003B5C] transition-all shadow-sm"
               />
+            </div>
+            <div>
+              <button
+                onClick={handleSearch}
+                className="bg-[#003B5C] text-white hover:bg-[#002a42] font-bold py-4 px-6 rounded-2xl transition-colors text-sm"
+              >
+                Search
+              </button>
             </div>
             <div className="relative w-full md:w-48 group">
               <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#003B5C] transition-colors" />
@@ -287,8 +303,8 @@ export default function AdminDashboard() {
                       className={`hover:bg-blue-50/30 transition-colors cursor-pointer group`}
                       onClick={() => {
                         const params = new URLSearchParams();
-                        if (searchTerm.trim()) {
-                          params.set("search", searchTerm.trim());
+                        if (appliedSearch.trim()) {
+                          params.set("search", appliedSearch.trim());
                         }
                         if (selectedDate) {
                           params.set("date", selectedDate);

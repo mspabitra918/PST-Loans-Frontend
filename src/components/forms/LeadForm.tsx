@@ -53,7 +53,7 @@ const leadSchema = z.object({
 type LeadFormData = z.infer<typeof leadSchema>;
 import { cn } from "@/lib/utils";
 
-const Select = React.forwardRef<
+export const Select = React.forwardRef<
   HTMLSelectElement,
   React.SelectHTMLAttributes<HTMLSelectElement> & {
     label?: string;
