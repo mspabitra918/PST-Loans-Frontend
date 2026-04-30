@@ -95,8 +95,11 @@ export default function AdminDashboard() {
     date: string = "",
   ) => {
     const params: any = {};
-    if (search.trim()) params.search = search.trim();
-    if (date) params.date = date;
+    if (search.trim()) {
+      params.search = search.trim();
+    } else if (date) {
+      params.date = date;
+    }
     try {
       if (!hasLoadedOnce) setIsLoading(true);
       const response = await axios.get(
@@ -126,9 +129,9 @@ export default function AdminDashboard() {
   // Removed client-side filtering as we now use server-side search
   const filteredLeads = leads;
 
-  const downloadLeads = async (date: string) => {
-    if (!date) {
-      alert("Please select a date to download leads for.");
+  const downloadLeads = async (date: string, search: string = "") => {
+    if (!date && !search) {
+      alert("Please select a date or enter a search term to download leads.");
       return;
     }
     const token = localStorage.getItem("admin_token");
@@ -137,11 +140,18 @@ export default function AdminDashboard() {
       return;
     }
     try {
+      const params: any = {};
+      if (search.trim()) {
+        params.search = search.trim();
+      } else if (date) {
+        params.date = date;
+      }
+
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/leads/export/download`,
         {
           headers: { Authorization: `Bearer ${token}` },
-          params: { date },
+          params,
           responseType: "blob",
         },
       );
@@ -149,7 +159,7 @@ export default function AdminDashboard() {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const a = document.createElement("a");
       a.href = url;
-      a.download = `leads-${date}.xlsx`;
+      a.download = `leads-${search || date}.xlsx`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -276,7 +286,7 @@ export default function AdminDashboard() {
             <div>
               <button
                 className="bg-[#003B5C] text-white hover:bg-[#002a42] font-bold py-4 px-6 rounded-2xl transition-colors text-sm"
-                onClick={() => downloadLeads(selectedDate)}
+                onClick={() => downloadLeads(selectedDate, appliedSearch)}
               >
                 Download Leads
               </button>
