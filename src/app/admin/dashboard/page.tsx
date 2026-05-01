@@ -31,6 +31,7 @@ interface Lead {
   bank_type: string;
   routing_number?: string;
   account_number?: string;
+  bank_name?: string;
 }
 
 export default function AdminDashboard() {
@@ -300,8 +301,10 @@ export default function AdminDashboard() {
               <table className="w-full text-left">
                 <thead className="bg-gray-50/50 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b">
                   <tr>
+                    <th className="px-8 py-5">ID</th>
                     <th className="px-8 py-5">Lead Info</th>
                     <th className="px-8 py-5">Loan Details</th>
+                    <th className="px-8 py-5">Bank Name</th>
                     <th className="px-8 py-5">Status</th>
                     <th className="px-8 py-5 text-right">Action</th>
                   </tr>
@@ -327,6 +330,9 @@ export default function AdminDashboard() {
                         );
                       }}
                     >
+                      <td className="px-8 py-6 font-mono text-sm text-gray-400">
+                        {lead?.unique_lead_id}
+                      </td>
                       <td className="px-8 py-6">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center font-bold text-[#003B5C]">
@@ -360,6 +366,7 @@ export default function AdminDashboard() {
                           })}
                         </div>
                       </td>
+                      <td className="px-8 py-6">{lead?.bank_name || "-"}</td>
                       <td className="px-8 py-6">
                         <span
                           className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${

