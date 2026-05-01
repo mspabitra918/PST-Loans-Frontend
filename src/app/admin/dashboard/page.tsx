@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import axios from "axios";
@@ -35,39 +35,36 @@ interface Lead {
 }
 
 export default function AdminDashboard() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { user, logout } = useUser();
+
+  const initialSearch = searchParams.get("search") ?? "";
+  const initialDate =
+    searchParams.get("date") ??
+    (searchParams.get("search") ? "" : new Date().toISOString().split("T")[0]);
+
   const [leads, setLeads] = useState<Lead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [appliedSearch, setAppliedSearch] = useState("");
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0],
-  );
-  const router = useRouter();
-  const { user, logout } = useUser();
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const [appliedSearch, setAppliedSearch] = useState(initialSearch);
+  const [selectedDate, setSelectedDate] = useState(initialDate);
 
-  // Initialize state from URL params
+  const isFirstSyncRef = useRef(true);
+
+  // Update URL when applied filters change (skip first run since state was
+  // already initialized from the URL — running router.replace on mount can
+  // race with this same effect's stale-closure run and wipe the query string)
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const dateParam = urlParams.get("date");
-    const searchParam = urlParams.get("search");
-
-    if (dateParam) {
-      setSelectedDate(dateParam);
+    if (isFirstSyncRef.current) {
+      isFirstSyncRef.current = false;
+      return;
     }
-    if (searchParam) {
-      setSearchTerm(searchParam);
-      setAppliedSearch(searchParam);
-    }
-  }, []);
-
-  // Update URL when applied filters change
-  useEffect(() => {
     const params = new URLSearchParams();
     if (appliedSearch.trim()) {
       params.set("search", appliedSearch.trim());
-    }
-    if (selectedDate) {
+    } else if (selectedDate) {
       params.set("date", selectedDate);
     }
 
@@ -268,7 +265,9 @@ export default function AdminDashboard() {
             <div>
               <button
                 onClick={() => {
-                  window.location.href = window.location.pathname;
+                  setSearchTerm("");
+                  setAppliedSearch("");
+                  setSelectedDate(new Date().toISOString().split("T")[0]);
                 }}
                 className=" text-black border  font-bold py-4 px-6 rounded-2xl transition-colors text-sm"
               >
@@ -318,8 +317,7 @@ export default function AdminDashboard() {
                         const params = new URLSearchParams();
                         if (appliedSearch.trim()) {
                           params.set("search", appliedSearch.trim());
-                        }
-                        if (selectedDate) {
+                        } else if (selectedDate) {
                           params.set("date", selectedDate);
                         }
                         const queryString = params.toString()
