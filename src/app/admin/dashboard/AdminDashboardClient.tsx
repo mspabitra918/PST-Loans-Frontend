@@ -81,6 +81,7 @@ export default function AdminDashboardClient() {
   }, [router, appliedSearch, selectedDate]);
 
   const handleSearch = () => {
+    // setSelectedDate("");
     setAppliedSearch(searchTerm);
   };
 
@@ -252,7 +253,11 @@ export default function AdminDashboardClient() {
               <input
                 type="date"
                 value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
+                onChange={(e) => {
+                  setAppliedSearch("");
+                  setSearchTerm("");
+                  setSelectedDate(e.target.value);
+                }}
                 className="w-full pl-12 pr-4 py-4 bg-white border-2 border-gray-100 rounded-2xl text-sm focus:outline-none focus:border-[#003B5C] transition-all shadow-sm"
               />
             </div>
