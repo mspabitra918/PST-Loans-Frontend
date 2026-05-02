@@ -232,7 +232,7 @@ export default function VerifyBankPage() {
         <div className="flex flex-col items-center mb-10 text-center">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-xl">CL</span>
+              <span className="text-white font-bold text-xl">PST</span>
             </div>
             <div className="h-8 w-px bg-surface-dark"></div>
             <div className="flex items-center gap-1.5 text-primary-light font-bold text-sm bg-primary-light/5 px-3 py-1.5 rounded-full border border-primary-light/20">

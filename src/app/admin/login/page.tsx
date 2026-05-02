@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Card,
@@ -23,6 +23,13 @@ export default function AdminLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { setUser } = useUser();
+
+  useEffect(() => {
+    const token = localStorage.getItem("admin_token");
+    if (token) {
+      router.push("/admin/dashboard");
+    }
+  }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

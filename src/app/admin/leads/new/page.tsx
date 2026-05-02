@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeft, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -9,6 +9,13 @@ import toast from "react-hot-toast";
 
 export default function NewLeadPage() {
   const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem("admin_token");
+    if (!token) {
+      router.push("/admin/login");
+    }
+  }, [router]);
 
   const [form, setForm] = useState({
     name: "",
