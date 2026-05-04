@@ -89,6 +89,7 @@ export const LeadForm = () => {
   const [isDuplicate, setIsDuplicate] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [leadId, setLeadId] = useState("");
+  const [isTouching, setIsTouching] = useState(false);
 
   // Meta Pixel — fires on thank-you page after successful lead submission
   useEffect(() => {
@@ -199,6 +200,11 @@ export const LeadForm = () => {
         );
       }
     }
+  };
+
+  const handleChange = (value: any) => {
+    setIsTouching(true);
+    form.setValue("loanAmount", value, { shouldDirty: true });
   };
 
   const steps = [
@@ -442,9 +448,11 @@ export const LeadForm = () => {
                             step="100"
                             className="w-full h-3 bg-gray-200 rounded-full appearance-none cursor-pointer accent-[#4CAF50]"
                             {...field}
-                            onChange={(e) =>
-                              field.onChange(parseInt(e.target.value))
-                            }
+                            onChange={(e) => {
+                              const value = parseInt(e.target.value);
+                              field.onChange(value); // react-hook-form update
+                              handleChange(value); // your custom handler
+                            }}
                           />
                         )}
                       />
@@ -466,6 +474,7 @@ export const LeadForm = () => {
                       Capped at 35.99% APR – No Predatory Rates
                     </div>
                     <Button
+                      disabled={!isTouching}
                       type="button"
                       className="w-full h-14 text-lg font-bold shadow-lg"
                       onClick={() => nextStep(["zip"])}
