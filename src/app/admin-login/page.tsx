@@ -38,7 +38,7 @@ export default function AdminLogin() {
       if (!showMfa) {
         // First step: verify credentials and trigger OTP
         const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/login`,
+          `https://api.pstloans.com/api/auth/login`,
           {
             email,
             password,
