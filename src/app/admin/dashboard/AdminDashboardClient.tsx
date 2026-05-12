@@ -72,7 +72,7 @@ export default function AdminDashboardClient() {
   useEffect(() => {
     const token = localStorage.getItem("admin_token");
     if (!token) {
-      router.push("/admin/login");
+      router.push("/admin-login");
       return;
     }
 
@@ -108,7 +108,7 @@ export default function AdminDashboardClient() {
       setLeads(response.data.leads);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
-        router.push("/admin/login");
+        router.push("/admin-login");
       }
     } finally {
       setIsLoading(false);
@@ -118,7 +118,7 @@ export default function AdminDashboardClient() {
 
   const handleLogout = () => {
     logout();
-    router.push("/admin/login");
+    router.push("/admin-login");
   };
 
   const filteredLeads = leads;
@@ -130,7 +130,7 @@ export default function AdminDashboardClient() {
     }
     const token = localStorage.getItem("admin_token");
     if (!token) {
-      router.push("/admin/login");
+      router.push("/admin-login");
       return;
     }
     try {
@@ -161,7 +161,7 @@ export default function AdminDashboardClient() {
     } catch (err) {
       console.error("Download failed", err);
       if (axios.isAxiosError(err) && err.response?.status === 401) {
-        router.push("/admin/login");
+        router.push("/admin-login");
         return;
       }
       alert("Failed to download leads. Please try again.");

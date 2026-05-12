@@ -63,7 +63,7 @@ export const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="/admin/login"
+                  href="/admin-login"
                   className="text-white inline-block transform transition duration-200 hover:translate-x-2"
                 >
                   Admin Portal

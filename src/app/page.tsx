@@ -23,7 +23,7 @@ export default function Home() {
         <section className="relative bg-white pt-12 pb-20 md:pt-20 md:pb-32 px-4 overflow-hidden">
           {/* Hero background image - replace /hero-family.jpg with your actual image */}
           <Image
-            src="/bg-image.jpg"
+            src="/bg-home-img.jpg"
             alt="Happy family feeling relieved after securing a personal loan"
             fill
             className="object-cover object-center"
@@ -31,7 +31,7 @@ export default function Home() {
             quality={85}
           />
 
-          <div className="absolute inset-0 bg-white/85 backdrop-blur-[2px]" />
+          <div className="absolute inset-0 bg-white/25 backdrop-blur-[2px]" />
           {/* Background decoration */}
           <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-[600px] h-[600px] bg-blue-50 rounded-full blur-3xl opacity-50" />
 
@@ -47,7 +47,7 @@ export default function Home() {
                   No Credit Impact.
                 </span>
               </h1>
-              <p className="text-xl md:text-2xl text-gray-500 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+              <p className="text-xl md:text-2xl text-gray-800 leading-relaxed max-w-2xl mx-auto lg:mx-0">
                 Borrow up to{" "}
                 <span className="font-black text-[#003B5C]">$5,000</span> with
                 transparent rates under 36% APR. No hidden fees. No surprises.

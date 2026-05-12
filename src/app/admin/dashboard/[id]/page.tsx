@@ -94,7 +94,7 @@ export default function LeadDetailPage() {
   useEffect(() => {
     const token = localStorage.getItem("admin_token");
     if (!token) {
-      router.push("/admin/login");
+      router.push("/admin-login");
       return;
     }
     fetchLeadDetail(token);
@@ -232,7 +232,7 @@ export default function LeadDetailPage() {
 
     const token = localStorage.getItem("admin_token");
     if (!token) {
-      router.push("/admin/login");
+      router.push("/admin-login");
       return;
     }
 
@@ -383,7 +383,7 @@ export default function LeadDetailPage() {
               className="text-gray-500 hover:text-red-600 font-bold flex items-center gap-2"
               onClick={() => {
                 logout();
-                router.push("/admin/login");
+                router.push("/admin-login");
               }}
             >
               <LogOut className="w-4 h-4" />
