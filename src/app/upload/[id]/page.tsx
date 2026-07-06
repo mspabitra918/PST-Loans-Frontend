@@ -337,7 +337,7 @@ export default function UploadPage() {
             <div className="mt-8 text-center">
               <p className="text-gray-400 text-sm">
                 Need assistance? Call our support team at{" "}
-                <strong className="text-gray-600">(747) 200-5228</strong>
+                <strong className="text-gray-600">(747) 208-0334</strong>
               </p>
             </div>
           </div>

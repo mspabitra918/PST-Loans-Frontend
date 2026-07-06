@@ -698,7 +698,7 @@ export default function VerifyBankPage() {
         {/* Support Footer */}
         <p className="text-center mt-8 text-xs text-text-secondary font-medium">
           Having trouble connecting? Contact your Loan Officer or call us at
-          (747) 200-5228
+          (747) 208-0334
         </p>
       </div>
     </div>

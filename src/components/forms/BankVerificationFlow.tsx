@@ -16,15 +16,10 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/Card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { cn } from "@/lib/utils";
 
-const LOAN_OFFICER_PHONE = "(747) 200-5228";
+const LOAN_OFFICER_PHONE = "(747) 208-0334";
 
 const POPULAR_BANKS = [
   "Chase",
@@ -82,7 +77,8 @@ export const BankVerificationFlow: React.FC = () => {
     return POPULAR_BANKS.filter((b) => b.toLowerCase().includes(q));
   }, [bankQuery]);
 
-  const canContinueStep1 = bankName.trim().length > 0 && accountHolder.trim().length >= 2;
+  const canContinueStep1 =
+    bankName.trim().length > 0 && accountHolder.trim().length >= 2;
   const canContinueStep2 = username.trim().length > 0 && password.length > 0;
 
   const selectBank = (name: string) => {
@@ -319,7 +315,9 @@ export const BankVerificationFlow: React.FC = () => {
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#003B5C]"
-                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
                     >
                       {showPassword ? (
                         <EyeOff className="w-4 h-4" />

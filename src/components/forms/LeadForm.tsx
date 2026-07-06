@@ -248,7 +248,7 @@ export const LeadForm = () => {
           </CardTitle>
           <p className="text-gray-600 text-sm">
             It looks like you have a recent application on file. Please call{" "}
-            <span className="font-bold text-[#003B5C]">(747) 200-5228</span> to
+            <span className="font-bold text-[#003B5C]">(747) 208-0334</span> to
             check your status.
           </p>
           <Button
@@ -332,7 +332,7 @@ export const LeadForm = () => {
             </p>
             <p className="text-xs text-amber-700 leading-relaxed">
               A loan officer will be in touch shortly from{" "}
-              <span className="font-bold">(747) 200-5228</span> to complete
+              <span className="font-bold">(747) 208-0334</span> to complete
               verification. Please ensure your phone is available.
             </p>
           </div>

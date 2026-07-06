@@ -74,7 +74,7 @@ export default function PrivacyPolicyPage() {
                 icon: <Phone className="w-6 h-6 text-[#003B5C]" />,
                 title: "Contact",
                 content:
-                  "Questions about this policy can be sent to support@pstloans.example or (747) 200-5228.",
+                  "Questions about this policy can be sent to support@pstloans.example or (747) 208-0334.",
               },
             ].map((section, idx) => (
               <div

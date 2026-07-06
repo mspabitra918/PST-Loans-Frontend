@@ -50,7 +50,7 @@ export default function ContactPage() {
                 {
                   icon: <Phone className="w-6 h-6 text-[#003B5C]" />,
                   title: "Phone",
-                  value: "(747) 200-5228",
+                  value: "(747) 208-0334",
                   desc: "Speak with a loan specialist directly",
                 },
                 {

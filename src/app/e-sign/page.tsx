@@ -1,12 +1,6 @@
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import {
-  PenTool,
-  FileCheck,
-  Monitor,
-  MailX,
-  ArrowLeft,
-} from "lucide-react";
+import { PenTool, FileCheck, Monitor, MailX, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 export default function ESignConsentPage() {
@@ -60,7 +54,7 @@ export default function ESignConsentPage() {
                 icon: <MailX className="w-6 h-6 text-[#003B5C]" />,
                 title: "Withdrawing Consent",
                 content:
-                  "You may withdraw your consent to receive electronic documents at any time by contacting us at support@pstloans.example or (747) 200-5228. Withdrawing consent may limit our ability to service your loan and could result in paper document fees.",
+                  "You may withdraw your consent to receive electronic documents at any time by contacting us at support@pstloans.example or (747) 208-0334. Withdrawing consent may limit our ability to service your loan and could result in paper document fees.",
               },
             ].map((section, idx) => (
               <div
